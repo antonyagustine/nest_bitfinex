@@ -1,0 +1,23 @@
+bitfinex:
+  ☐ Use Nestjs framework to create the application,
+  ☐ docs here https://docs.nestjs.com/
+
+Use the following library in this application:
+  ☐ https://github.com/bitfinexcom/bitfinex-api-node
+
+It's docs here:
+  ☐ https://cdn.statically.io/gh/bitfinexcom/bitfinex-api-node/master/docs/index.html
+  ☐ Use it's WS2Manager class to subscribe to any public channel with any subscription data of your choice.
+  ☐ Make more than 25 subscriptions, it should open more websockets connections to Bitfinex servers as single connection doesn't support more than 25 subscriptions for Bitfinex; and there shouldn't be any errors i.e.everything should keep working.
+  ☐ It should close unused connections if any and there shouldn't be any memory leaks.
+  ☐ Create a test script to automate such test and to validate the solution provided.
+  ☐ You may use any library mentioned in Nestjs docs/examples or any widely known library which is upto enterprise standards.
+
+Ref:
+ ☐ • https://youtu.be/Cq-Ohxq_9-Y
+ ☐ • https://youtu.be/Hr2vrhrNaRo
+ ☐ • https://youtu.be/hliOMEQRqf8
+
+NOTE: 
+☐ no, I mean to say that make at least more than 25 subscriptions, you may use supporting pairs from here https://api-pub.bitfinex.com/v2/conf/pub:list:pair:exchange for testing.
+☐ I expected you to have proper control over connection opening and closing.
