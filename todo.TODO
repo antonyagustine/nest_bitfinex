@@ -1,0 +1,130 @@
+bitfinex:
+  ☐ Use Nestjs framework to create the application,
+  ☐ docs here https://docs.nestjs.com/
+
+Use the following library in this application:
+  ☐ https://github.com/bitfinexcom/bitfinex-api-node
+
+It's docs here:
+  ☐ https://cdn.statically.io/gh/bitfinexcom/bitfinex-api-node/master/docs/index.html
+  ☐ Use it's WS2Manager class to subscribe to any public channel with any subscription data of your choice.
+  ☐ Make more than 25 subscriptions, it should open more websockets connections to Bitfinex servers as single connection doesn't support more than 25 subscriptions for Bitfinex; and there shouldn't be any errors i.e.everything should keep working.
+  ☐ It should close unused connections if any and there shouldn't be any memory leaks.
+  ☐ Create a test script to automate such test and to validate the solution provided.
+  ☐ You may use any library mentioned in Nestjs docs/examples or any widely known library which is upto enterprise standards.
+
+Ref:
+ ☐ • https://youtu.be/Cq-Ohxq_9-Y
+ ☐ • https://youtu.be/Hr2vrhrNaRo
+ ☐ • https://youtu.be/hliOMEQRqf8
+
+NOTE: 
+  ☐ no, I mean to say that make at least more than 25 subscriptions, you may use supporting pairs from here https://api-pub.bitfinex.com/v2/conf/pub:list:pair:exchange for testing.
+  ☐ I expected you to have proper control over connection opening and closing.
+
+Kafka topic (ticker):
+  ☐ manage snapshot: ticker last ticker only, send on first time downstream subscription only
+  ☐ ref: https://docs.bitfinex.com/reference#ws-public-ticker
+
+Topic (trades):
+  ☐ manage snapshot: last 50 trades, send on first time downstream subscription only
+  ☐ ref: https://docs.bitfinex.com/reference#ws-public-trades
+
+Topic (book):
+  ☐ manage snapshot: automatically managed by bitfinex lib class (already supports 25 price levels by default), send first snapshot upon first time downstream subscription then send regular snapshots after an interval(default 10 sec), interval time should be configured centrally
+  ☐ Send book updates as soon as they are received from upstream(book update doesn't mean the whole book)
+  ☐ Order must be maintained for snapshots and book updates, updates must follow the snapshot i.e. it should be serially not concurrently. Also, both are sent to the same topic.
+  ☐ ref: https://docs.bitfinex.com/reference#ws-public-books
+
+Refs:
+  ☐ kafka doc: https://docs.nestjs.com/microservices/kafka
+  ☐ bitfinex limitations: https://docs.bitfinex.com/docs/requirements-and-limitations
+  ☐ bitfinex websocket api: (for example books) https://docs.bitfinex.com/reference#ws-public-books
+  ☐ bitfinxex node api docs: https://cdn.statically.io/gh/bitfinexcom/bitfinex-api-node/master/docs/index.html
+
+
+hey @Antony, I forgot to give message formats, have you reached that point, you didn't ask for it?
+anyways
+here it is:
+
+messaging
+===
+Incoming(consume):
+---
+For ex. 
+1) unsubscribe ETHBTC trades:
+
+topic: liquidity.data-provider.operations
+{
+  "action":"unsubscribe",
+  "pair":"ETHBTC",
+  "channel":"trades"
+}
+
+2) Subscribe BTCUSDT ticker:
+topic: liquidity.data-provider.operations
+{
+  "action":"subscribe",
+  "pair":"BTCUSDT",
+  "channel":"ticker"
+}
+
+
+Outgoing(produce):
+---
+For ex.
+1)topic: ticker
+key: ETHBTC
+{
+  "pair": "ETHBTC",
+  "bid": 0.033687,
+  "bid_size": 138.7785004,
+  "ask": 0.033709,
+  "ask_size": 148.2597561,
+  "daily_change": -0.00044,
+  "daily_change_rel": -0.0129,
+  "last_price": 0.033709,
+  "volume": 19663.09327329,
+  "high": 0.03529,
+  "low": 0.033469
+}
+
+2) topic: trades
+key: BTCUSD
+{
+  "mts": 1613470514031,
+  "price": 49252,
+  "amount": -0.0005,
+  "symbol": "BTCUSD"
+}
+
+3) topic: book
+key: BTCUSD
+book snapshot(first time and then at regular interval):
+
+{
+  "symbol": "BTCUSD",
+  "bids": [
+    [
+      54782, 0.00022
+    ],
+    .
+    .
+    n items
+  ],
+  "asks": [
+    [
+      54834, 0.325
+    ],
+    .
+    .
+    n items
+  ]
+}
+
+here bids and asks are arrays of [<price level>, <amount>] items, no negative(-ve) sign for asks in snapshots
+
+update (following snapshot):
+[PRICE, COUNT, AMOUNT]
+For ex.
+[54782, 1, -0.00012]
